@@ -18,22 +18,52 @@ vector<string> category = { "1.식비","2.카페","3.술/유흥","4.생활","5.쇼핑","6.�
 
 vector<Transaction> trade_data[WEEK_DAY];
 
-void Budget(double& x);
 void List_Budget();
-void Result();
+double Result(const vector<string>& excluded_categories);
 
 int main() {
-    double money;
-    Budget(money);
+    double week_budget;
+    cout << "1주일 동안 사용할 예산을 입력하세요: ";
+    cin >> week_budget;
+    cout << "1주일 동안 계획된 예산은 " << week_budget << " 입니다" << endl;
+
     List_Budget();
-    Result();
+    vector<string> excluded_categories;
+    cout << "무지출 챌린지 에서 제외할 카테고리를 선택하세요. (선택을 마치려면 0을 입력하세요)" << endl;
+    for (int i = 0; i < category.size(); i++) {
+        cout << category[i] << " ";
+    }
+    cout << endl;
+
+    while (true) {
+        int c;
+        cin >> c;
+        if (c == 0) {
+            break;
+        }
+
+        if (c < 1 || c > category.size()) {
+            cout << "올바른 카테고리를 선택하세요." << endl;
+            continue;
+        }
+
+        excluded_categories.push_back(category[c - 1]);
+    }
+
+    double total_consumption = Result(excluded_categories);
+    if (week_budget > total_consumption) {
+        cout << "남은 예산!" << endl;
+        cout << "-----------------------------" << endl;
+        cout << week_budget - total_consumption << endl;
+    }
+    else {
+        cout << "예산 초과!!" << endl;
+        cout << "-----------------------------" << endl;
+        cout << total_consumption - week_budget << endl;
+    }
 }
 
-void Budget(double& x) {
-    cout << "1주일 동안 사용할 예산을 입력하세요: ";
-    cin >> x;
-    cout << "1주일 동안 계획된 예산은 " << x << " 입니다" << endl;
-}
+
 
 // 일주일 가계부 입력받음
 void List_Budget() {
@@ -80,7 +110,8 @@ void List_Budget() {
 }
 
 // 가계부 결과 나타냄 (무지출)
-void Result() {
+// 가계부 결과 나타냄 (무지출)
+double Result(const vector<string>& excluded_categories) {
     int no_expenditure = 0;
     double total_consumption = 0;
     double max_price = numeric_limits<double>::min(); // 최대값 초기화
@@ -94,7 +125,14 @@ void Result() {
             no_expenditure++;
         }
         else {
+            bool allCategoriesNoExpenditure = true; // 모든 카테고리가 무지출인지 여부
+
             for (const auto& transaction : trade_data[i]) {
+                // 특정 카테고리가 포함되어 있으면 해당 카테고리는 무지출이 아님
+                if (find(excluded_categories.begin(), excluded_categories.end(), transaction.category) != excluded_categories.end()) {
+                    allCategoriesNoExpenditure = false;
+                }
+
                 cout << "카테고리: " << transaction.category << ", 거래처: " << transaction.trade << ", 금액: " << transaction.price << endl;
                 total_consumption += transaction.price;
                 // 최대값 갱신
@@ -102,10 +140,16 @@ void Result() {
                     max_price = transaction.price;
                 }
             }
+
+            // 모든 카테고리가 무지출인 경우에만 no_expenditure를 증가시킴
+            if (allCategoriesNoExpenditure) {
+                no_expenditure++;
+            }
         }
     }
 
     cout << "무지출 일수는 " << no_expenditure << " 입니다" << endl;
     cout << "총 소비금액는 " << total_consumption << "입니다" << endl;
     cout << "최대 소비금액은 " << max_price << "입니다" << endl;
+    return total_consumption;
 }
