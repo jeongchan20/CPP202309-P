@@ -110,10 +110,10 @@ void List_Budget() {
 }
 
 // 가계부 결과 나타냄 (무지출)
-// 가계부 결과 나타냄 (무지출)
 double Result(const vector<string>& excluded_categories) {
     int no_expenditure = 0;
     double total_consumption = 0;
+    double percentage = 0;
     double max_price = numeric_limits<double>::min(); // 최대값 초기화
 
     for (int i = 0; i < WEEK_DAY; i++) {
@@ -147,9 +147,11 @@ double Result(const vector<string>& excluded_categories) {
             }
         }
     }
+    percentage = max_price / total_consumption * 100;
 
     cout << "무지출 일수는 " << no_expenditure << " 입니다" << endl;
     cout << "총 소비금액는 " << total_consumption << "입니다" << endl;
     cout << "최대 소비금액은 " << max_price << "입니다" << endl;
+    cout << percentage << " 전체 금액에서 차지하는 비율 입니다" << endl;
     return total_consumption;
 }
