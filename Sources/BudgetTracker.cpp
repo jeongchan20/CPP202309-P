@@ -59,6 +59,10 @@ double BudgetTracker::Result(const vector<string>& excluded_categories,
     double max_price = numeric_limits<double>::min();
 
     for (int i = 0; i < WEEK_DAY; i++) {
+        if (find(excluded_categories.begin(), excluded_categories.end(), "ALL") != excluded_categories.end()) {
+            continue;
+        }
+
         DisplayTransactionDetails(i);
 
         if (trade_data[i].empty()) {
@@ -139,6 +143,7 @@ void BudgetTracker::ListBudget() {
     }
 }
 
+
 void BudgetTracker::RunBudgetTracker() {
     double week_budget;
     cout << "1주일 동안 사용할 예산을 입력하세요: ";
@@ -147,17 +152,22 @@ void BudgetTracker::RunBudgetTracker() {
 
     ListBudget();
     vector<string> excluded_categories;
-    cout << "무지출 챌린지 에서 제외할 카테고리를 선택하세요. (선택을 마치려면 "
-        "0을 입력하세요)"
-        << endl;
-    for (int i = 0; i < category.size(); i++) {
-        cout << category[i] << " ";
-    }
-    cout << endl;
+
 
     while (true) {
         int c;
+        for (int i = 0; i < category.size(); i++) {
+            cout << category[i] << " ";
+        }
+        cout << "무지출 챌린지에서 제외할 카테고리를 선택하세요. (선택을 마치려면 0을 입력하세요): ";
         cin >> c;
+
+
+        if (cin.fail()) {
+            cout << "숫자를 입력하세요." << endl;
+            continue;
+        }
+
         if (c == 0) {
             break;
         }
@@ -169,6 +179,7 @@ void BudgetTracker::RunBudgetTracker() {
 
         excluded_categories.push_back(category[c - 1]);
     }
+
 
     double average_consumption = 0;
     vector<double> category_percentage;
