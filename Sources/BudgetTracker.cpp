@@ -55,6 +55,7 @@ double BudgetTracker::Result(const vector<string>& excluded_categories,
     double& average_consumption,
     vector<double>& category_percentage) {
     int no_expenditure = 0;
+    string max_trade = "";
     double total_consumption = 0;
     double max_price = numeric_limits<double>::min();
 
@@ -80,6 +81,7 @@ double BudgetTracker::Result(const vector<string>& excluded_categories,
                 total_consumption += transaction.price;
                 if (transaction.price > max_price) {
                     max_price = transaction.price;
+                    max_trade = transaction.trade;
                 }
             }
 
@@ -94,7 +96,7 @@ double BudgetTracker::Result(const vector<string>& excluded_categories,
 
     cout << "무지출 일수는 " << no_expenditure << " 입니다" << endl;
     cout << "총 소비금액는 " << total_consumption << "원 입니다" << endl;
-    cout << "최대 소비금액은 " << max_price << "원 입니다" << endl;
+    cout << "최대 소비금액은 " << max_trade << " : " << max_price << "원 입니다" << endl;
 
 
     return total_consumption;
@@ -109,6 +111,7 @@ void BudgetTracker::ListBudget() {
         if (check1 == "x" or check1 == "X") {
             continue;
         }
+
 
         while (true) {
             cout << "카테고리를 선택해주세요" << endl;
@@ -140,8 +143,27 @@ void BudgetTracker::ListBudget() {
                 break;
             }
         }
+
+        // 거래 내역 수정 및 삭제 옵션 추가
+        cout << "수정 또는 삭제하시겠습니까? ('M' or 'D', 입력을 종료하려면 'X'): ";
+        string modifyOrDelete;
+        cin >> modifyOrDelete;
+
+        if (modifyOrDelete == "M" || modifyOrDelete == "m") {
+            // 수정 로직 추가
+            // 사용자에게 수정할 거래 내역 선택을 받고 수정합니다.
+        }
+        else if (modifyOrDelete == "D" || modifyOrDelete == "d") {
+            // 삭제 로직 추가
+            // 사용자에게 삭제할 거래 내역 선택을 받고 삭제합니다.
+        }
+        else if (modifyOrDelete == "X" || modifyOrDelete == "x") {
+            // 입력 종료
+            break;
+        }
     }
 }
+
 
 
 void BudgetTracker::RunBudgetTracker() {
