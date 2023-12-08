@@ -123,6 +123,13 @@ void BudgetTracker::ListBudget() {
             int c;
             cin >> c;
 
+            if (cin.fail()) {
+                cout << "숫자를 입력하세요." << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue;
+            }
+
             if (c < 1 || c > category.size()) {
                 cout << "올바른 카테고리를 선택하세요." << endl;
                 continue;
