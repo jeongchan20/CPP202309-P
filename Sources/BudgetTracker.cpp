@@ -1,4 +1,4 @@
-#include"BudgetTracker.h"
+#include"헤더.h"
 
 //dayIndex를 입력받아 요일의 거래내역,카테고리,거래처,금액을 출력함 
 void BudgetTracker::DisplayTransactionDetails(int dayIndex) {
@@ -59,6 +59,7 @@ double BudgetTracker::Result(const vector<string>& excluded_categories,
     double total_consumption = 0;
     double max_price = numeric_limits<double>::min();
 
+
     for (int i = 0; i < WEEK_DAY; i++) {
         if (find(excluded_categories.begin(), excluded_categories.end(), "ALL") != excluded_categories.end()) {
             continue;
@@ -102,6 +103,7 @@ double BudgetTracker::Result(const vector<string>& excluded_categories,
     return total_consumption;
 }
 //사용자에게 입력을 여부를 확인함
+
 void BudgetTracker::ListBudget() {
     for (int i = 0; i < WEEK_DAY; i++) {
         cout << week[i] << endl;
@@ -111,7 +113,13 @@ void BudgetTracker::ListBudget() {
         if (check1 == "x" or check1 == "X") {
             continue;
         }
+        ofstream outputFile{ "user_input.txt",ios::app };
 
+
+        if (!outputFile.is_open()) {
+            cout << "파일을 열 수 없습니다." << endl;
+            return;
+        }
 
         while (true) {
             cout << "카테고리를 선택해주세요" << endl;
@@ -119,36 +127,49 @@ void BudgetTracker::ListBudget() {
                 cout << category[i] << " ";
             }
             cout << endl;
+            try {
+                int c;
+                cout << "카테고리 번호를 입력하세요: ";
+                cin >> c;
 
-            int c;
-            cin >> c;
+                if (cin.fail()) {
+                    throw std::invalid_argument("숫자를 입력하세요.");
+                }
 
-            if (cin.fail()) {
-                cout << "숫자를 입력하세요." << endl;
+                if (c < 1 || c > category.size()) {
+                    throw std::out_of_range("올바른 카테고리를 선택하세요.");
+                }
+
+                string selected_category = category[c - 1];
+                cout << "거래처와 금액을 입력하세요: ";
+                Transaction new_transaction;
+                new_transaction.category = selected_category;
+                cin >> new_transaction.trade >> new_transaction.price;
+
+                outputFile << week[i] << endl;
+                outputFile << selected_category << " " << new_transaction.trade << " " << new_transaction.price << endl;
+
+                // 입력 에러 처리
+                if (cin.fail() || new_transaction.price < 0) {
+                    throw std::invalid_argument("올바른 금액을 입력하세요.");
+                }
+
+                trade_data[i].push_back(new_transaction);
+
+                cout << "더 입력하시겠습니까? ('X'를 입력하면 입력이 종료되고, 다음 날로 "
+                    "넘어갑니다.): ";
+                string check2;
+                cin >> check2;
+                if (check2 == "x" or check2 == "X") {
+                    break;
+                }
+            }
+            catch (const std::exception& e) {
+                cout << "예외 발생: " << e.what() << endl;
                 cin.clear();
                 cin.ignore(numeric_limits<streamsize>::max(), '\n');
-                continue;
             }
-
-            if (c < 1 || c > category.size()) {
-                cout << "올바른 카테고리를 선택하세요." << endl;
-                continue;
-            }
-
-            string selected_category = category[c - 1];
-            cout << "거래처와 금액을 입력하세요: ";
-            Transaction new_transaction;
-            new_transaction.category = selected_category;
-            cin >> new_transaction.trade >> new_transaction.price;
-            trade_data[i].push_back(new_transaction);
-
-            cout << "더 입력하시겠습니까? ('X'를 입력하면 입력이 종료되고, 다음 날로 "
-                "넘어갑니다.): ";
-            string check2;
-            cin >> check2;
-            if (check2 == "x" or check2 == "X") {
-                break;
-            }
+            outputFile.close();
         }
 
         // 거래 내역 수정 및 삭제 옵션 추가
@@ -157,8 +178,30 @@ void BudgetTracker::ListBudget() {
         cin >> modifyOrDelete;
 
         if (modifyOrDelete == "M" || modifyOrDelete == "m") {
-            // 수정 로직 추가
-            // 사용자에게 수정할 거래 내역 선택을 받고 수정합니다.
+            cout << "수정할 거래 내역의 번호를 입력하세요: ";
+            int modifyIndex;
+            cin >> modifyIndex;
+
+            // 입력이 유효한지 확인
+            if (cin.fail() || modifyIndex < 1 || modifyIndex > trade_data[i].size()) {
+                cout << "올바른 번호를 입력하세요." << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                continue; // 다시 입력받기
+            }
+
+            // 선택한 거래 내역 수정
+            Transaction& selectedTransaction = trade_data[i][modifyIndex - 1];
+            cout << "새로운 거래처와 금액을 입력하세요: ";
+            cin >> selectedTransaction.trade >> selectedTransaction.price;
+
+            // 에러 처리
+            if (cin.fail() || selectedTransaction.price < 0) {
+                cout << "올바른 금액을 입력하세요." << endl;
+                cin.clear();
+                cin.ignore(numeric_limits<streamsize>::max(), '\n');
+                // 수정을 실패하더라도 계속 진행할지, 또는 중단할지 선택
+            }
         }
         else if (modifyOrDelete == "D" || modifyOrDelete == "d") {
             // 삭제 로직 추가
@@ -181,7 +224,7 @@ void BudgetTracker::RunBudgetTracker() {
 
     ListBudget();
     vector<string> excluded_categories;
-
+    excluded_categories.push_back("ALL");
 
     while (true) {
         int c;

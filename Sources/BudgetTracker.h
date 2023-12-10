@@ -3,6 +3,7 @@
 #include <limits>
 #include <string>
 #include <vector>
+#include<fstream>
 using namespace std;
 
 const int WEEK_DAY = 7;
